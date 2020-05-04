@@ -7,11 +7,13 @@
         <sourceTestOutputDir name="target/generated-test-sources/test-annotations" />
         <outputRelativeToContentRoot value="true" />
         <module name="spark" />
+        <module name="LeetCode" />
         <module name="flink" />
       </profile>
     </annotationProcessing>
     <bytecodeTargetLevel>
       <module name="flink" target="1.5" />
+      <module name="LeetCode" target="1.5" />
       <module name="spark" target="1.8" />
     </bytecodeTargetLevel>
   </component>
