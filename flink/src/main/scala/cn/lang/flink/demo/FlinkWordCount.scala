@@ -2,12 +2,6 @@ package cn.lang.flink.demo
 
 import org.apache.flink.api.scala.{DataSet, ExecutionEnvironment}
 
-/**
- * @author ：jianglang
- * @date ：Created in 2019/5/2 11:07 AM
- * @description ：flink word count from local file
- * @version ：1.0.0
- */
 object FlinkWordCount {
 
   def main(args: Array[String]): Unit = {
@@ -31,6 +25,7 @@ object FlinkWordCount {
       .map((_, 1)) // 对每一个单词进行计数
       .groupBy(0) // 按照索引位在0号的单词进行分组
       .sum(1) // 按照索引位在1号的单词数量进行加和
+
     /** sink */
     result.print()
   }

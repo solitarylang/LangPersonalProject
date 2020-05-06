@@ -9,6 +9,7 @@
         <option value="$PROJECT_DIR$/spark/pom.xml" />
         <option value="$PROJECT_DIR$/flink/pom.xml" />
         <option value="$PROJECT_DIR$/LeetCode/pom.xml" />
+        <option value="$PROJECT_DIR$/scala/pom.xml" />
       </list>
     </option>
   </component>

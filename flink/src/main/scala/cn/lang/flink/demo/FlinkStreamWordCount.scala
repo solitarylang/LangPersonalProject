@@ -29,7 +29,7 @@ object FlinkStreamWordCount {
     //    13> (flink,1)
     //    13> (flink,2)
     //    13> (flink,3)
-    //    13> (flink,4) 这里的结果会一直累加，请注意和后面窗口函数的区别
+    //    13> (flink,4) 这里的结果会一直累加，注意和后面窗口函数的区别
 
     // execute the stream work
     env.execute("FlinkStreamWordCount")
