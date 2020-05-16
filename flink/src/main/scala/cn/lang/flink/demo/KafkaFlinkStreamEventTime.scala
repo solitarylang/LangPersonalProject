@@ -29,6 +29,8 @@ object KafkaFlinkStreamEventTime {
     sdf.parse(date).getTime
   }
 
+  case class Event(uid: String, timestamp: Long) // 这里上报时间戳默认是10位
+
   def main(args: Array[String]): Unit = {
     // environment
     val env = StreamExecutionEnvironment.getExecutionEnvironment
@@ -49,36 +51,47 @@ object KafkaFlinkStreamEventTime {
     kafkaProps.setProperty("value.deserializer", "org.apache.kafka.common.serialization.StringDeserializer")
     kafkaProps.setProperty("auto.offset.reset", "latest")
 
-    // source，这里输入的每一条数据格式：uid,2020年05月02日17:26:16
+    // source，这里输入的每一条数据格式：
+    //    1,2020年05月02日17:26:16
+    //    1,2020年05月02日17:26:17
+    //    1,2020年05月02日17:26:18
+    //    1,2020年05月02日17:26:19
+    //    1,2020年05月02日17:26:20
+    //    1,2020年05月02日17:26:21
+    //    1,2020年05月02日17:26:22
+    //    1,2020年05月02日17:26:28
     val transaction = env.addSource(
       new FlinkKafkaConsumer011[String](IN_KAFKA_TOPIC, new SimpleStringSchema(), kafkaProps))
       .setParallelism(1)
 
     /** transform */
     /* 转换需求是将同一个uid窗口内上报的所有数据 */
-    val result: DataStream[mutable.HashSet[Long]] = transaction
+    val result: DataStream[Event] = transaction
       .map(iterm => Event(iterm.split(",")(0), dataToTimestamp(iterm.split(",")(1)))) // 传入的每一条数据都是13位时间戳
       .assignTimestampsAndWatermarks(
-        new BoundedOutOfOrdernessTimestampExtractor[Event](Time.milliseconds(2000)) {
+        new BoundedOutOfOrdernessTimestampExtractor[Event](Time.milliseconds(1000)) {
           override def extractTimestamp(element: Event): Long = element.timestamp
-        })
-      .keyBy(_.uid)
+        }
+      )
+    // 将转换的数据打印出来
+    //    result.map(i => println("Infos In Event is: " + i.uid + "-" + i.timestamp))
+
+    val result1: DataStream[(String, Long)] = result
+      .map(event => (event.uid, event.timestamp))
+      .keyBy(0)
       .window(TumblingEventTimeWindows.of(Time.seconds(5)))
-      .fold(new mutable.HashSet[Long]()) {
-        case (set, iterm) => set += iterm.timestamp
-      }
+      .minBy(1)
 
     // sink
-    result.map(iterm => iterm.mkString(";") + " : " + System.currentTimeMillis()).print()
-
+    result1.map(iterm => println("Infos In Result is: " + iterm._1 + "-" + iterm._2 + "==" + System.currentTimeMillis()))
+    //    Infos In Result is: 1-1588411576000==1589552826008
+    //    Infos In Result is: 1-1588411580000==1589552826011
+    //    Infos In Result is: 1-1588411588000==1589552826011
     env.execute("KafkaFlinkStreamEventTime")
   }
 }
 
-// 这是业务中数据按照对应格式封装的样例类，其中包含有event time
-case class Event(uid: String, timestamp: Long) // 这里上报时间戳默认是10位
-
-// 低水印机制的类，也可以使用BoundedOutOfOrdernessTimestampExtractor匿名实现类
+// 水印机制的类，也可以使用BoundedOutOfOrdernessTimestampExtractor匿名实现类
 class MyBoundedOutOfOrdernessTimestampExtractor(delayInterval: Long) extends AssignerWithPeriodicWatermarks[Event] {
   // 上一个发送的水印值(也就是上一个触发窗口时的水印值)
   var lastEmittedWatermark: Long = 0L
@@ -102,6 +115,7 @@ class MyBoundedOutOfOrdernessTimestampExtractor(delayInterval: Long) extends Ass
     if (tmp > currentMaxTimestamp) {
       currentMaxTimestamp = tmp
     }
+    println(element.toString + "--" + tmp + "-" + currentMaxTimestamp)
     tmp
   }
 }
