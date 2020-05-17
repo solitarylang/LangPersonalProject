@@ -144,11 +144,11 @@ public class ListNodeCollection {
         // 联想到单链表只能从前往后遍历，所以关键问题是如何找出倒数第n个节点的前驱结点
         // 核心理念是采用双指针：
         // 1.A和B相差n步长从前往后遍历,当B节点到达链表最后时，A节点即为倒数第n个节点的前驱节点
-        // n1(A) n2 n3(B) n4 n5 n6 n7
-        // n1 n2 n3 n4 n5(A) n6 n7(B)
+        // n1(A) n2 n3(B) n4 n5 n6 n7 null
+        // n1 n2 n3 n4 n5 n6(A) n7 null(B)
         // 2.考虑到如果倒数第n个节点刚好是头结点，那么它的前驱结点是不存在的，可以赋一个哑结点n0
-        // n0(A) n1 n2(B) n3 n4 n5 n6 n7
-        // n0 n1 n2 n3 n4 n5(A) n6 n7(B)
+        // n0(A) n1 n2(B) n3 n4 n5 n6 n7 null
+        // n0 n1 n2 n3 n4 n5 n6(A) n7 null(B)
         ListNode n0 = new ListNode(0);// 哑结点,赋值不影响结果
         n0.next = head;
         ListNode A = n0;
