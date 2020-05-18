@@ -1,7 +1,5 @@
 package cn.lang.leetcode;
 
-import java.util.HashSet;
-
 /**
  * @author ：jianglang
  * @date ：Created in 2020/5/16 5:49 PM
@@ -143,7 +141,7 @@ public class ListNodeCollection {
     public ListNode removeNthFromEnd(ListNode head, int n) {
         // 联想到单链表只能从前往后遍历，所以关键问题是如何找出倒数第n个节点的前驱结点
         // 核心理念是采用双指针：
-        // 1.A和B相差n步长从前往后遍历,当B节点到达链表最后时，A节点即为倒数第n个节点的前驱节点
+        // 1.A和B相差n(例子：n取1)步长从前往后遍历,当B节点到达链表最后时，A节点即为倒数第n个节点的前驱节点
         // n1(A) n2 n3(B) n4 n5 n6 n7 null
         // n1 n2 n3 n4 n5 n6(A) n7 null(B)
         // 2.考虑到如果倒数第n个节点刚好是头结点，那么它的前驱结点是不存在的，可以赋一个哑结点n0
@@ -162,6 +160,102 @@ public class ListNodeCollection {
         }
         A.next = A.next.next;
         return n0.next;
+    }
+
+    /**
+     * 24 / 206
+     * 地址： https://leetcode-cn.com/problems/fan-zhuan-lian-biao-lcof/
+     * 反转链表
+     */
+    public ListNode reverseList(ListNode head) {
+        // 局部反转后的链表
+        ListNode result = null;
+        while (head != null) {
+            // 局部反转，当然也可以用递归的形式
+            ListNode tmp = head.next;
+
+            head.next = result;
+            result = head;
+
+            // 最终将tmp复制给head
+            head = tmp;
+        }
+
+        return result;
+    }
+
+    /**
+     * 203
+     * 地址： https://leetcode-cn.com/problems/remove-linked-list-elements/
+     * 移除链表元素(移除给定链表元素的值)
+     */
+    public ListNode removeElements(ListNode head, int val) {
+        // 定义一个哑变量避免head被删除
+        ListNode dump = new ListNode(0);
+        dump.next = head;
+        // pointer：标记遍历的位置
+        ListNode input = dump;
+        while (input.next != null) {
+            if (input.next.val == val) {
+                // 如果当前存在一个待移除的值，那么移除之后指针不需要往后移动
+                input.next = input.next.next;
+            } else {
+                // 只有在不存在待移除的值，才需要将指针向下移动
+                input = input.next;
+            }
+        }
+        return dump.next;
+    }
+
+    /**
+     * 328
+     * 地址： https://leetcode-cn.com/problems/odd-even-linked-list/
+     * 将奇数节点和偶数节点分开排列
+     */
+    public ListNode oddEvenList(ListNode head) {
+        if (head == null || head.next == null) return head;
+
+        ListNode oddHead = head;// 奇数链表的头，也是最终返回的结果
+        ListNode oddTail = oddHead;// 奇数链表的尾，用来和偶数头对接(未遍历完是可作为迭代器)
+        ListNode evenHead = head.next;// 偶数链表的头
+        ListNode evenTail = evenHead;// 偶数链表的尾
+
+        while (evenTail != null && evenTail.next != null) {
+            /**  链表的问题：
+             * 1.指针的变化会影响遍历条件的改变，这里需要注意；
+             * 2.解决链表问题最好的办法是在脑中或者纸上把链表画出来；
+             * ------------------------------------
+             * 			oddHead
+             * 			oddTail
+             * 	round0		1	2	3	4	5
+             * 				evenHead
+             * 				evenTail
+             * 				2	3	4	5
+             *------------------------------------
+             * 			oddHead
+             * 			oddTail	    oddTail
+             * 	round1		1		3	4	5
+             *
+             * 			evenHead
+             * 			        		evenTail
+             * 				2		4	    5
+             *------------------------------------
+             * 			oddHead
+             * 							oddTail
+             * 	round2		1		3		5
+             * 			evenHead
+             * 								evenTail
+             * 				2		4		null
+             */
+            oddTail.next = evenTail.next;
+            oddTail = oddTail.next;
+
+            evenTail.next = oddTail.next;
+            evenTail = evenTail.next;
+        }
+        // 循环结束将偶数链表拼接到奇数链表尾部
+        oddTail.next = evenHead;
+        return oddHead;
     }
 
     public static void main(String[] args) {
