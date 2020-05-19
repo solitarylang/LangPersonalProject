@@ -258,6 +258,35 @@ public class ListNodeCollection {
         return oddHead;
     }
 
+    /**
+     * 234
+     * 地址： https://leetcode-cn.com/problems/palindrome-linked-list/
+     * 判断一个链表是否为回文链表
+     * 空间o(1)，时间o(n)
+     */
+    public boolean isPalindrome(ListNode head) {
+        // 思路1：双指针，头尾和尾部一起向中间移动并判断是否相同
+        // 思路2：将链表后半段翻转，然后依次遍历判断是否相同，(可满足空间o(1))
+        // 实际生产中没必要过于追求空间复杂度，这里采用双指针的方式
+        java.util.List<Integer> raw = new java.util.ArrayList<Integer>();
+        // 将链表转换为数组
+        while (head != null) {
+            raw.add(head.val);
+            head = head.next;
+        }
+        // 定义双指针
+        int start = 0;
+        int end = raw.size() - 1;
+        while (start < end) {
+            // 如果出现不相同即可退出
+            if (!raw.get(start).equals(raw.get(end))) return false;
+
+            start++;
+            end--;
+        }
+        return true;
+    }
+
     public static void main(String[] args) {
         ListNodeCollection bean = new ListNodeCollection();
 
