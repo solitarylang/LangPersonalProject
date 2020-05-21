@@ -7,9 +7,7 @@ package cn.lang.leetcode;
  * @version: 1.0.0$
  */
 public class ListNodeCollection {
-    /**
-     * 单链表节点单元
-     */
+    /* 单链表节点单元 */
     private static class ListNode {
         int val;
         ListNode next;
@@ -285,6 +283,47 @@ public class ListNodeCollection {
             end--;
         }
         return true;
+    }
+
+    /**
+     * 2
+     * 地址： https://leetcode-cn.com/problems/add-two-numbers/
+     * 链表表示数，然后相加
+     */
+    public ListNode addTwoNumbers(ListNode l1, ListNode l2) {
+        ListNode result = new ListNode(0);//定义哑结点
+        ListNode resultPointer = result;
+        int isIncrease = 0;
+
+        while (l1 != null || l2 != null) {
+            int sum = (l1 == null ? 0 : l1.val)
+                    + (l2 == null ? 0 : l2.val)
+                    + isIncrease;
+
+            isIncrease = sum / 10;
+
+            // 递归
+            resultPointer.next = new ListNode(sum % 10);
+            resultPointer = resultPointer.next;
+
+            l1 = l1 == null ? null : l1.next;
+            l2 = l2 == null ? null : l2.next;
+        }
+
+        if (isIncrease != 0) resultPointer.next = new ListNode(isIncrease);
+
+        return result.next;
+    }
+
+    /* ================================== */
+    // Definition for doubly-linked list.
+    class DoublyListNode {
+        int val;
+        DoublyListNode next, prev;
+
+        DoublyListNode(int x) {
+            val = x;
+        }
     }
 
     public static void main(String[] args) {
