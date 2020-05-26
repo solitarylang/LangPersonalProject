@@ -10,7 +10,7 @@ import org.apache.spark.rdd.RDD
 /**
  * @author ：jianglang
  * @date ：Created in 2020/5/26 11:50 AM
- * @description ：使用SVM分离经典Iris数据集(代码摘自scala机器学习)
+ * @description ：使用SVM分离经典Iris数据集
  */
 object SNMWithSGD {
   def main(args: Array[String]): Unit = {
@@ -55,11 +55,17 @@ object SNMWithSGD {
     // (2.125031770237907,1.0)前面是计算得分，后面是实际标签
 
     // 评估计算，模型预测和实际标签符合的正确率
+    // numBins： ？？？
     val metrics: BinaryClassificationMetrics = new BinaryClassificationMetrics(testResult, numBins = 0)
+    // 由于预测百分百准确，可知混淆矩阵即metrics中confusions
+    /*          positive  negative
+    * positive   TP=37      FN=0    P=37
+    * negative   FP=0       TN=23   N=23
+    */
 
-    // 计算roc曲线下面的面积
+    // 计算roc曲线下面的面积，即AUC：area under roc curve
     val roc: Double = metrics.areaUnderROC() // 1.0
-    // 计算pr曲线下面的面积
+    // 计算pr曲线下面的面积(精准率-召回率)
     val pr: Double = metrics.areaUnderPR() // 1.0
   }
 }
