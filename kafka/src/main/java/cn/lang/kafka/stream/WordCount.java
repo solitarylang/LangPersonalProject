@@ -19,20 +19,24 @@ import java.util.concurrent.CountDownLatch;
 /**
  * @author ：jianglang
  * @date ：Created in 2020/5/30 7:14 PM
- * @description：kafka stream的单词统计书写
- * @version: 1.0.0$
+ * @description ：kafka streams DSL的word count,source=kafka,sink=kafka
+ * @version : 1.0.0$
  */
 public class WordCount {
     public static void main(String[] args) {
         Properties props = new Properties();
+        // 可作为consumer的group id
         props.put(StreamsConfig.APPLICATION_ID_CONFIG, "streams-wordcount");
+        // kafka的地址，多个逗号分隔，目前只支持单集群
         props.put(StreamsConfig.BOOTSTRAP_SERVERS_CONFIG, "localhost:9092");
+        // 序列化和反序列化，在读取和写出流的时候、在读取和写出state的时候都会用到
         props.put(StreamsConfig.DEFAULT_KEY_SERDE_CLASS_CONFIG, Serdes.String().getClass());
         props.put(StreamsConfig.DEFAULT_VALUE_SERDE_CLASS_CONFIG, Serdes.String().getClass());
 
         final StreamsBuilder builder = new StreamsBuilder();
 
         KStream<String, String> source = builder.stream("streams-plaintext-input");
+
         source.flatMapValues(value -> Arrays.asList(value.toLowerCase(Locale.getDefault()).split(" ")))
                 .groupBy((key, value) -> value)
                 .count(Materialized.<String, Long, KeyValueStore<Bytes, byte[]>>as("counts-store"))
@@ -41,7 +45,11 @@ public class WordCount {
 
         final Topology topology = builder.build();
         final KafkaStreams streams = new KafkaStreams(topology, props);
+        // CountDownLatch用await()阻塞当前线程，countDown()记录完成线程的数量
+        // 当getCount()=0的时候继续执行await后续的代码
         final CountDownLatch latch = new CountDownLatch(1);
+
+        System.out.println(topology.describe());
 
         // attach shutdown handler to catch control-c
         Runtime.getRuntime().addShutdownHook(new Thread("streams-shutdown-hook") {
