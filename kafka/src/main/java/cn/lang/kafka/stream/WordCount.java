@@ -18,40 +18,41 @@ import java.util.concurrent.CountDownLatch;
 
 /**
  * @author ：jianglang
+ * @version : 1.0.0$
  * @date ：Created in 2020/5/30 7:14 PM
  * @description ：kafka streams DSL的word count,source=kafka,sink=kafka
- * @version : 1.0.0$
  */
 public class WordCount {
     public static void main(String[] args) {
+        /* props */
         Properties props = new Properties();
-        // 可作为consumer的group id
-        props.put(StreamsConfig.APPLICATION_ID_CONFIG, "streams-wordcount");
-        // kafka的地址，多个逗号分隔，目前只支持单集群
-        props.put(StreamsConfig.BOOTSTRAP_SERVERS_CONFIG, "localhost:9092");
-        // 序列化和反序列化，在读取和写出流的时候、在读取和写出state的时候都会用到
-        props.put(StreamsConfig.DEFAULT_KEY_SERDE_CLASS_CONFIG, Serdes.String().getClass());
+        props.put(StreamsConfig.APPLICATION_ID_CONFIG, "streams-wordcount");//可作为consumer的group id
+        props.put(StreamsConfig.BOOTSTRAP_SERVERS_CONFIG, "localhost:9092");//kafka的地址，多个逗号分隔，目前只支持单集群
+        props.put(StreamsConfig.DEFAULT_KEY_SERDE_CLASS_CONFIG, Serdes.String().getClass());// 序列化和反序列化，在读取和写出流的时候、在读取和写出state的时候都会用到
         props.put(StreamsConfig.DEFAULT_VALUE_SERDE_CLASS_CONFIG, Serdes.String().getClass());
 
+        /* topology */
         final StreamsBuilder builder = new StreamsBuilder();
 
-        KStream<String, String> source = builder.stream("streams-plaintext-input");
+        KStream<String, String> source = builder.stream("streams-plaintext-input");//source processor,传入参数可定义key,value的序列化方式，以及时间提取器等
 
-        source.flatMapValues(value -> Arrays.asList(value.toLowerCase(Locale.getDefault()).split(" ")))
-                .groupBy((key, value) -> value)
-                .count(Materialized.<String, Long, KeyValueStore<Bytes, byte[]>>as("counts-store"))
-                .toStream()
-                .to("streams-wordcount-output", Produced.with(Serdes.String(), Serdes.Long()));
+        source.flatMapValues(value -> Arrays.asList(value.toLowerCase(Locale.getDefault()).split(" ")))//KString<String,String>
+                .groupBy((key, value) -> value)// KGroupedStream<String,String>
+                .count(Materialized.<String, Long, KeyValueStore<Bytes, byte[]>>as("counts-store"))//KTable<String,String>
+                .toStream()//KStream<String,Long>
+                .to("streams-wordcount-output", Produced.with(Serdes.String(), Serdes.Long()));//sink processor,指定输出key,value的数据类型
 
         final Topology topology = builder.build();
+
+        /* KafkaStreams实例 */
         final KafkaStreams streams = new KafkaStreams(topology, props);
         // CountDownLatch用await()阻塞当前线程，countDown()记录完成线程的数量
         // 当getCount()=0的时候继续执行await后续的代码
         final CountDownLatch latch = new CountDownLatch(1);
 
-        System.out.println(topology.describe());
+        System.out.println(topology.describe());// 打印流处理拓扑
 
-        // attach shutdown handler to catch control-c
+        // 钩子函数
         Runtime.getRuntime().addShutdownHook(new Thread("streams-shutdown-hook") {
             @Override
             public void run() {
@@ -61,27 +62,12 @@ public class WordCount {
         });
 
         try {
+            // 执行
             streams.start();
             latch.await();
         } catch (Throwable e) {
             System.exit(1);
         }
         System.exit(0);
-        // 测试结果
-        // langjiang@langs-MacBook-Pro kafka_2.11-2.1.0 % bin/kafka-console-consumer.sh --bootstrap-server localhost:9092 \
-        //    --topic streams-wordcount-output \
-        //    --from-beginning \
-        //    --formatter kafka.tools.DefaultMessageFormatter \
-        //    --property print.key=true \
-        //    --property print.value=true \
-        //    --property key.deserializer=org.apache.kafka.common.serialization.StringDeserializer \
-        //    --property value.deserializer=org.apache.kafka.common.serialization.LongDeserializer
-        //  kafkastream	1
-        //  learn	1
-        //  kafka	1
-        //  stream	1
-        //  demo	1
-        //  hello	14
-        //  hello	15
     }
 }
