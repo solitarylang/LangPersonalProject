@@ -12,7 +12,7 @@ import java.util.concurrent.CountDownLatch;
 /**
  * @author ：jianglang
  * @date ：Created in 2020/5/30 6:49 PM
- * @description ：kafka stream的单词单词统计，旨在了解书写kafka stream程序的组件以及本地调试部署
+ * @description ：kafka stream的单词统计，旨在了解书写kafka stream程序的组件以及本地调试部署
  *          代码来源[应用开发](http://kafka.apache.org/25/documentation/streams/tutorial)
  * @version: 1.0.0$
  */
