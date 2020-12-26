@@ -25,10 +25,25 @@
             <artifactId>flink-table_2.11</artifactId>
             <version>1.7.0</version>
         </dependency>
+
         <dependency>
             <groupId>org.apache.flink</groupId>
             <artifactId>flink-connector-kafka-0.11_2.11</artifactId>
             <version>1.7.2</version>
+        </dependency>
+        <!--flink source monitor-->
+        <!-- https://mvnrepository.com/artifact/net.wicp.tams/common-binlog-alone -->
+        <dependency>
+            <groupId>net.wicp.tams</groupId>
+            <artifactId>common-binlog-alone</artifactId>
+            <version>3.6.13</version>
+        </dependency>
+        <!-- https://mvnrepository.com/artifact/com.twitter/chill-protobuf -->
+        <!-- 0.9.3 0.5.2缺少方法 -->
+        <dependency>
+            <groupId>com.twitter</groupId>
+            <artifactId>chill-protobuf</artifactId>
+            <version>0.8.3</version>
         </dependency>
     </dependencies>
 

@@ -5,7 +5,7 @@ import org.apache.spark.streaming.{Seconds, StreamingContext}
 
 /**
  * @author ：jianglang
- * @date ：Created in 2020/4/29 7:44 PM
+ * @date ：Created in 2019/4/29 7:44 PM
  * @description ：熟悉spark streaming相关的操作
  * @version ：1.0.0
  */
@@ -18,6 +18,23 @@ object SparkStreaming {
     // Create a DStream that will connect to hostname:port, like localhost:9999
     val raw_data = ssc.socketTextStream("localhost", 9999)
 
+    raw_data.cache()
+
+    raw_data.foreachRDD(_.foreachPartition(par => {
+      par.foreach(_ => {
+        println(0 / 1)
+      })
+    }))
+    try {
+      raw_data.foreachRDD(_.foreachPartition(par => {
+        par.foreach(_ => {
+          println(1 / 0)
+        })
+      }))
+    } catch {
+      case _: Exception => println("hello")
+    }
+
     val result = raw_data.map((_, 1)).reduceByKey(_ + _)
 
     result.print()
@@ -25,4 +42,5 @@ object SparkStreaming {
     ssc.start()
     ssc.awaitTermination() // Wait for the computation to terminate
   }
+
 }

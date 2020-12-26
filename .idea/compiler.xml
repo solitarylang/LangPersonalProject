@@ -10,10 +10,12 @@
         <module name="spark" />
         <module name="scala" />
         <module name="flink" />
+        <module name="kafka" />
       </profile>
     </annotationProcessing>
     <bytecodeTargetLevel>
       <module name="flink" target="1.5" />
+      <module name="kafka" target="1.5" />
       <module name="leetcode" target="1.5" />
       <module name="scala" target="1.5" />
       <module name="spark" target="1.8" />

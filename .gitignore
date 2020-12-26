@@ -1,0 +1,14 @@
+/target/
+*.classpath
+*.project
+target
+.settings
+.idea
+**/*.iml
+metastore_db
+checkpoint
+.cache-main
+*.log
+*.iml
+.DS_Store
+logs

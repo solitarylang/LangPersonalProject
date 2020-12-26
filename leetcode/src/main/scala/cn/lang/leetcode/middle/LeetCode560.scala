@@ -14,7 +14,7 @@ package cn.lang.leetcode.middle
  */
 object LeetCode560 {
   def subarraySum(nums: Array[Int], k: Int): Int = {
-    // 考虑使用动态规划的方法
+    // 考虑使用动态规划+递归的方法，也可以采用记忆回溯(及直接遍历的方式)
     def subarraySum1(nums: Array[Int], start: Int, end: Int, k: Int): Int = {
       if (start < end) {
         var sum = nums(start) // 为了避免和k少一次比较以及初始值的影响
