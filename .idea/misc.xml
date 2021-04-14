@@ -11,6 +11,7 @@
         <option value="$PROJECT_DIR$/LeetCode/pom.xml" />
         <option value="$PROJECT_DIR$/scala/pom.xml" />
         <option value="$PROJECT_DIR$/kafka/pom.xml" />
+        <option value="$PROJECT_DIR$/Flink-Iceberg-Realtime/pom.xml" />
       </list>
     </option>
   </component>
