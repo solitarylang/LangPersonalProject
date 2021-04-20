@@ -16,7 +16,7 @@
         <!--version-->
         <scala.version>2.11.8</scala.version>
         <flink.version>1.12.0</flink.version>
-        <mysql.version>5.1.32</mysql.version>
+        <mysql.version>8.0.16</mysql.version>
         <fastjson.version>1.2.36</fastjson.version>
         <scalatest.version>3.0.0</scalatest.version>
         <slf4j.version>1.7.5</slf4j.version>
