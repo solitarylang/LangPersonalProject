@@ -3,7 +3,7 @@
 *.project
 target
 .settings
-.idea
+.idea/
 **/*.iml
 metastore_db
 checkpoint

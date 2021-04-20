@@ -16,7 +16,7 @@
     </annotationProcessing>
     <bytecodeTargetLevel>
       <module name="flink" target="1.5" />
-      <module name="Flink-Iceberg-Realtime" target="1.5" />
+      <module name="Flink-Iceberg-Realtime" target="1.8" />
       <module name="FlinkToIceberg" target="1.8" />
       <module name="kafka" target="1.5" />
       <module name="leetcode" target="1.5" />
