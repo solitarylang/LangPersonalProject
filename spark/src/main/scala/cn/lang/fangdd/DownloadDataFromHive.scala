@@ -13,6 +13,11 @@ object DownloadDataFromHive {
   /**
    * main
    *
+   * local debug:
+   * 21/04/25 10:57:22 INFO Client:
+   * Retrying connect to server: fddhdfsmaster/103.235.228.41:8020.
+   * Already tried 0 time(s); maxRetries=45
+   *
    * @param args
    */
   def main(args: Array[String]): Unit = {
@@ -53,18 +58,18 @@ object DownloadDataFromHive {
       .master("local[*]")
       .getOrCreate()
 
-    // 设置source hadoop的有关信息
-    //    HadoopConf.changeHadoopConf(spark,
-    //      SparkRuleConstants.DATA_WAREHOUSE_HADOOP_NAMESPACE,
-    //      SparkRuleConstants.DATA_WAREHOUSE_HADOOP_NN1,
-    //      SparkRuleConstants.DATA_WAREHOUSE_HADOOP_NN1_ADDR,
-    //      SparkRuleConstants.DATA_WAREHOUSE_HADOOP_NN2,
-    //      SparkRuleConstants.DATA_WAREHOUSE_HADOOP_NN2_ADDR)
-
+    //     设置source hadoop的有关信息
     HadoopConf.changeHadoopConf(spark,
-      "dw/core-site.xml",
-      "dw/hdfs-site.xml",
-      "dw/hive-site.xml")
+      SparkRuleConstants.DATA_WAREHOUSE_HADOOP_NAMESPACE,
+      SparkRuleConstants.DATA_WAREHOUSE_HADOOP_NN1,
+      SparkRuleConstants.DATA_WAREHOUSE_HADOOP_NN1_ADDR,
+      SparkRuleConstants.DATA_WAREHOUSE_HADOOP_NN2,
+      SparkRuleConstants.DATA_WAREHOUSE_HADOOP_NN2_ADDR)
+
+//    HadoopConf.changeHadoopConf(spark,
+//      "/tmp/compare/core-site.xml",
+//      "/tmp/compare/hdfs-site.xml",
+//      "/tmp/compare/hive-site.xml")
 
     val queryLatestPartitionSql = s"SELECT * FROM ${tableName} WHERE dt='${SparkRuleConstants.LATEST_PARTITION}'"
 
@@ -77,13 +82,13 @@ object DownloadDataFromHive {
     val outputPath = SparkRuleConstants.PATH_RULE.replaceAll("tableName", tableName)
     logger.info(s"准备往${outputPath} 追加数据 ...")
 
-    // 要将数据写出的时候调整hadoop的配置信息
-    HadoopConf.changeHadoopConf(spark,
-      SparkRuleConstants.MRS_WAREHOUSE_HADOOP_NAMESPACE,
-      SparkRuleConstants.MRS_WAREHOUSE_HADOOP_NN1,
-      SparkRuleConstants.MRS_WAREHOUSE_HADOOP_NN1_ADDR,
-      SparkRuleConstants.MRS_WAREHOUSE_HADOOP_NN2,
-      SparkRuleConstants.MRS_WAREHOUSE_HADOOP_NN2_ADDR)
+//    // 要将数据写出的时候调整hadoop的配置信息
+//    HadoopConf.changeHadoopConf(spark,
+//      SparkRuleConstants.MRS_WAREHOUSE_HADOOP_NAMESPACE,
+//      SparkRuleConstants.MRS_WAREHOUSE_HADOOP_NN1,
+//      SparkRuleConstants.MRS_WAREHOUSE_HADOOP_NN1_ADDR,
+//      SparkRuleConstants.MRS_WAREHOUSE_HADOOP_NN2,
+//      SparkRuleConstants.MRS_WAREHOUSE_HADOOP_NN2_ADDR)
 
     result.write
       .mode(SaveMode.Append)

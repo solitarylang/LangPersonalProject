@@ -1,5 +1,7 @@
 package cn.lang.fangdd
 
+import org.apache.hadoop.conf.Configuration
+import org.apache.hadoop.fs.Path
 import org.apache.spark.sql.{DataFrame, SparkSession}
 import org.slf4j.{Logger, LoggerFactory}
 
@@ -27,7 +29,7 @@ object DataCompareMainClass {
 
     init()
 
-    SparkRuleConstants.NEED_COMPARE_TABLES.foreach(tableName => {
+    SparkRuleConstants.NEED_COMPARE_TABLES_IN_PARQUET.foreach(tableName => {
       read(tableName)
       compare(tableName)
       clear()
@@ -38,11 +40,12 @@ object DataCompareMainClass {
    * init
    */
   def init(): Unit = {
-    logger.info("start init SparkSession ...")
+    logger.warn("start init SparkSession ...")
 
     spark = SparkSession.builder()
       .appName("compare_data")
       .config("hive.metastore.uris", SparkRuleConstants.MRS_WAREHOUSE_HIVE_META_STORE_URI)
+      .config("spark.yarn.am.waitTime", 1000)
       .enableHiveSupport()
       .master("local[*]")
       .getOrCreate()
@@ -54,9 +57,9 @@ object DataCompareMainClass {
    * @param tableName
    */
   def read(tableName: String): Unit = {
-    logger.info("-------------------------------------------")
-    logger.info(s"start read both data with (${tableName}) ...")
-    logger.info("-------------------------------------------")
+    logger.warn("-------------------------------------------")
+    logger.warn(s"start read both data with (${tableName}) ...")
+    logger.warn("-------------------------------------------")
 
     HadoopConf.changeHadoopConf(spark,
       SparkRuleConstants.MRS_WAREHOUSE_HADOOP_NAMESPACE,
@@ -65,18 +68,24 @@ object DataCompareMainClass {
       SparkRuleConstants.MRS_WAREHOUSE_HADOOP_NN2,
       SparkRuleConstants.MRS_WAREHOUSE_HADOOP_NN2_ADDR)
 
-    logger.info(s"start read data from path in parquet ...")
+    logger.warn(s"start read data from path in orc ...")
     dwDataFrame = spark.read.parquet(SparkRuleConstants.PATH_RULE.replaceAll("tableName", tableName))
-    val srcCount = dwDataFrame.count()
-    logger.info(s"data warehouse count in ${tableName}: ${srcCount}")
+    //dwDataFrame = spark.read.parquet(SparkRuleConstants.PATH_RULE.replaceAll("tableName", tableName))
+    val columnsInDw = dwDataFrame.schema.map(_.name)
+    logger.warn(s"dw DataFrame schema columns: ${columnsInDw}")
 
-    logger.info("start read data from mrs hive ...")
+    val srcCount = dwDataFrame.count()
+    logger.warn(s"data warehouse count in ${tableName}: ${srcCount}")
+
+    logger.warn("start read data from mrs hive ...")
     mrsDataFrame = spark.sql(s"SELECT * FROM ${tableName} WHERE dt='${SparkRuleConstants.LATEST_PARTITION}'")
     val destCount = mrsDataFrame.count()
-    logger.info(s"mrs warehouse count in ${tableName}: ${destCount}")
+    logger.warn(s"mrs warehouse count in ${tableName}: ${destCount}")
 
-    columns = mrsDataFrame.schema.map(_.name)
-    logger.info(s"mrs DataFrame schema columns: ${columns}")
+    columns = mrsDataFrame.schema.map(_.name).filter(!"dt".equals(_))
+    logger.warn(s"mrs DataFrame schema columns: ${columns}")
+
+    logger.warn(s"${tableName}双跑情况下数据量情况,srcCount=${srcCount}, destCount=${destCount}")
 
     if (srcCount != destCount) {
       logger.error(s"${tableName}双跑情况下数据量级不一致,srcCount=${srcCount}, destCount=${destCount}")
@@ -85,6 +94,7 @@ object DataCompareMainClass {
 
   /**
    * primary key
+   * 0
    *
    * @param tableName
    * @return
@@ -99,14 +109,47 @@ object DataCompareMainClass {
    * @param tableName 表名
    */
   def compare(tableName: String): Unit = {
-    logger.info("-------------------------------------------")
+    logger.warn("-------------------------------------------")
+    val cols: Seq[String] = dwDataFrame.schema.map(_.name)
 
-    val result = dwDataFrame.join(mrsDataFrame, columns)
+    for (index <- cols.indices) {
+      dwDataFrame = dwDataFrame.withColumnRenamed(cols(index), columns(index))
+    }
+    columns = columns.filter((column: String) =>
+      !"load_job_number".equals(column) &&
+        !"load_job_name".equals(column) &&
+        !"insert_timestamp".equals(column))
+
+    // 排除属于正常数据异常的字段进行明细验证
+    columns = columns.filter((column: String) =>
+      !"project_manager_list".equals(column) &&
+        !"team_name_list".equals(column))
+
+    // 排除掉因为between and使用date数据类型时出现的异常数据
+    columns = columns.filter((column: String) =>
+      !"agent_office_service_visit_7d_increase_agent_number".equals(column) &&
+      !"agent_office_service_visit_7d_record_agent_number".equals(column) &&
+      !"agent_office_service_visit_7d_guide_agent_number".equals(column) &&
+      !"agent_office_service_visit_mtd_increase_agent_number".equals(column) &&
+      !"agent_office_service_visit_mtd_record_agent_number".equals(column) &&
+      !"agent_office_service_visit_mtd_guide_agent_number".equals(column) &&
+      !"agent_office_service_visit_7d_record_store_number".equals(column) &&
+      !"agent_office_service_visit_7d_guide_store_number".equals(column) &&
+      !"agent_office_service_visit_mtd_record_store_number".equals(column) &&
+      !"agent_office_service_visit_mtd_guide_store_number".equals(column))
+
+    mrsDataFrame.printSchema()
+    dwDataFrame.printSchema()
+
+    val result = dwDataFrame.join(mrsDataFrame, columns, "inner")
+    //   val result = dwDataFrame.join(mrsDataFrame, columns)
     val bothCount = result.count()
-
     // TODO 需要将不一致的数据打印到日志中-可以设置batchSizeThreshold，超过不打印
-    logger.info(s"both exist count in ${tableName}: ${bothCount}")
-    logger.info("-------------------------------------------")
+    logger.warn(s"both exist count in ${tableName}: ${bothCount}")
+    logger.warn("-------------------------------------------")
+
+    // 打印差集数据的信息
+    mrsDataFrame.join(dwDataFrame, columns, "leftanti").show(10000)
   }
 
   /**

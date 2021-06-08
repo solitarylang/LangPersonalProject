@@ -8,9 +8,9 @@ object SparkRuleConstants {
   /**
    * GENERAL
    */
-  val PATH_RULE: String = "/tmp/compare/tableName"
+  val PATH_RULE: String = "hdfs://hacluster/tmp/compare/tableName"
 
-  val LATEST_PARTITION: String = "20210406"
+  val LATEST_PARTITION: String = "20210412"
 
   /**
    * DATA
@@ -28,7 +28,7 @@ object SparkRuleConstants {
   /**
    * MRS
    */
-  val MRS_WAREHOUSE_HIVE_META_STORE_URI = "thrift://10.100.193.155:9083,thrift://10.100.86.119:9083"
+  val MRS_WAREHOUSE_HIVE_META_STORE_URI = "thrift://10.100.86.119:9083,thrift://10.100.193.155:9083"
 
   val MRS_WAREHOUSE_HADOOP_NAMESPACE = "hacluster"
   val MRS_WAREHOUSE_HADOOP_NN1 = "3"
@@ -43,13 +43,7 @@ object SparkRuleConstants {
     "edw_public.dim_edw_pub_city_type_flag_info"
     , "edw_reports.adm_edw_agents_growth_center_daily_report_010_di"
     , "edw_reports.adm_edw_agents_growth_center_daily_report_009_di"
-    , "edw_trade.adm_xf_edw_trade_order_report_daac_006_df"
-    , "edw_agents.adm_edw_xf_business_staff_operation_di"
-    , "adm.house_project_directselling_staff_performance_statistic_daily_df"
-    , "adm.house_project_directselling_agent_activity_performance_statistic_daily_df"
-    , "adm.house_project_directselling_project_assistant_statistic_daily_df"
     , "edw_reports.adm_edw_city_agent_share_usre_activation_daily_statistic_df"
-    , "edw_public.dim_edw_pub_geography"
     , "edw_reports.adm_xf_edw_house_sub_project_report_004_daily_di"
     , "edw_reports.adm_xf_edw_organization_agent_report_001_daily_di"
     , "edw_reports.adm_xf_edw_agents_office_service_daily_reports_001_di"
@@ -57,10 +51,14 @@ object SparkRuleConstants {
     , "edw_reports.adm_xf_edw_house_sub_project_report_003_daily_di"
     , "edw_reports.adm_xf_edw_house_sub_project_report_001_daily_di"
     , "edw_houses.adm_xf_edw_house_sub_project_edw_001_df"
-    , "edw_public.dim_esf_edw_pub_date"
     , "edw_reports.adm_xf_edw_house_sub_project_report_006_daily_di"
     , "edw_reports.adm_xf_edw_organization_visit_agent_office_daily_reports_001_di"
     , "edw_reports.adm_xf_edw_house_sub_project_report_002_daily_di"
     , "edw_reports.adm_xf_edw_agents_office_service_daily_reports_002_di"
-    , "edw_reports.adm_xf_edw_agents_office_service_daily_reports_001_di")
+    , "edw_agents.adm_edw_xf_business_staff_operation_di")
+
+  val NEED_COMPARE_TABLES_IN_PARQUET: List[String] = List(
+    "adm.house_project_directselling_staff_performance_statistic_daily_df"
+    , "adm.house_project_directselling_agent_activity_performance_statistic_daily_df"
+    , "adm.house_project_directselling_project_assistant_statistic_daily_df")
 }

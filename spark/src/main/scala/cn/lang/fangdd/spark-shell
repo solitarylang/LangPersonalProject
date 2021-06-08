@@ -1,0 +1,42 @@
+# env
+sudo su - omm
+source /opt/Bigdata/client/bigdata_env
+
+spark-shell
+
+var dwDataFrame = spark.read.orc("hdfs://hacluster/tmp/compare/edw_reports.adm_xf_edw_agents_office_service_daily_reports_001_di");
+
+dwDataFrame.printSchema(); // 56 columns
+dwDataFrame.count(); // 966
+dwDataFrame.show(2);
+
+
+val sqlContext = new org.apache.spark.sql.hive.HiveContext(sc)
+
+val mrsDataFrame = sqlContext.sql("select * from edw_reports.adm_xf_edw_agents_office_service_daily_reports_001_di where dt='20210412'");
+
+mrsDataFrame.printSchema();
+mrsDataFrame.schema.map(_.name).foreach(print(_));
+mrsDataFrame.count(); // 1168
+mrsDataFrame.show(2);
+
+# 处理columns
+var cols = dwDataFrame.schema.map(_.name)
+var columns = mrsDataFrame.schema.map(_.name).filter(!"dt".equals(_))
+
+# rename
+for (index <- cols.indices) {dwDataFrame = dwDataFrame.withColumnRenamed(cols(index), columns(index))}
+
+val joinColumns = columns.filter((column: String) => !"load_job_number".equals(column) && !"load_job_name".equals(column) && !"insert_timestamp".equals(column))
+
+# join  primary key  agent_office_service_uc_id
+val result = dwDataFrame.join(mrsDataFrame, "agent_office_service_uc_id")
+
+result.printSchema();
+result.show(1);
+
+# details check
+dwDataFrame.filter(_.getAs[Long]("agent_office_service_uc_id")==131807).show(10)
+mrsDataFrame.filter(_.getAs[Long]("agent_office_service_uc_id")==131807).show(10)
+
+# union

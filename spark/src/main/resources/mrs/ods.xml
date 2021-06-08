@@ -1,0 +1,18 @@
+<configuration>
+	<property>
+		<name>fs.obs.impl</name>
+		<value>org.apache.hadoop.fs.obs.OBSFileSystem</value>
+	</property>
+	<property>
+		<name>fs.obs.access.key</name>
+		<value>FH7SZOIL85ULESADTNGD</value>
+	</property>
+	<property>
+		<name>fs.obs.secret.key</name>
+		<value>K13dtevT6azpqw6vbKJP6lM2bEeeZoUep3coltLh</value>
+	</property>
+	<property>
+		<name>fs.obs.endpoint</name>
+		<value>obsEndpoint</value>
+	</property>
+</configuration>
